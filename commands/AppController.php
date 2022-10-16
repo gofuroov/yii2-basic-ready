@@ -7,6 +7,11 @@ use yii\web\NotFoundHttpException;
 
 class AppController extends \yii\console\Controller
 {
+    /**
+     * Application installing
+     * @return void
+     * @throws NotFoundHttpException
+     */
     public function actionInit(): void
     {
         $exampleEnvFile = \Yii::getAlias('@app/.env.example');
@@ -15,18 +20,23 @@ class AppController extends \yii\console\Controller
             throw new NotFoundHttpException("Example env file is not found: <code>$exampleEnvFile</code>");
         }
         if (file_exists($envFile)) {
-            $answer = $this->convertHumanAnswer2Bool(Console::input(".env file already exist. Do you want replace it? Y/n: "));
+            $answer = $this->convertHumanAnswer2Bool(Console::input("\n.env file already exist. Do you want replace it? Y/n: "));
             if ($answer) {
                 unlink($envFile);
             } else {
+                Console::output("\nCopying skipped.\n");
                 return;
             }
         }
 
         copy($exampleEnvFile, $envFile);
-        Console::output("Copying done.");
+        Console::output("\nCopying done.\n");
     }
 
+    /**
+     * @param string $answer
+     * @return bool
+     */
     private function convertHumanAnswer2Bool(string $answer): bool
     {
         return in_array($answer, ['y', 'Y', 'yes']);
