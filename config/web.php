@@ -1,5 +1,6 @@
 <?php
 
+use app\modules\admin\AdminModule;
 use yii\log\FileTarget;
 use app\models\User;
 use yii\caching\FileCache;
@@ -16,6 +17,11 @@ $config = [
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset',
+    ],
+    'modules' => [
+        'admin' => [
+            'class' => AdminModule::class,
+        ],
     ],
     'components' => [
         'request' => [
