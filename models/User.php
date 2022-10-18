@@ -127,4 +127,32 @@ class User extends DefaultActiveRecord implements IdentityInterface
     {
         $this->auth_key = Yii::$app->security->generateRandomString();
     }
+
+    /**
+     * @param string $password
+     * @return bool
+     */
+    public function validatePassword(string $password): bool
+    {
+        return Yii::$app->security->validatePassword($password, $this->password_hash);
+    }
+
+    /**
+     * @return string
+     */
+    public function getPhotoUrl(): string
+    {
+        if (!$this->photo) {
+            return '/custom/images/defaultAvatar.png';
+        }
+        return ''; //TODO implement
+    }
+
+    /**
+     * @return string
+     */
+    public function getFullname(): string
+    {
+        return $this->first_name . ' ' . $this->last_name;
+    }
 }

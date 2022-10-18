@@ -2,6 +2,9 @@
 
 namespace app\modules\admin;
 
+use app\modules\admin\models\Admin;
+use yii\helpers\Url;
+
 /**
  * admin module definition class
  */
@@ -18,12 +21,18 @@ class AdminModule extends \yii\base\Module
     public $layout = 'adminLte';
 
     /**
+     * @var string
+     */
+    public $defaultRoute = 'default';
+
+    /**
      * {@inheritdoc}
      */
     public function init()
     {
-        parent::init();
+        \Yii::$app->user->identityClass = Admin::class;
+        \Yii::$app->user->loginUrl = ['/admin/site/login'];
 
-        // custom initialization code goes here
+        parent::init();
     }
 }
