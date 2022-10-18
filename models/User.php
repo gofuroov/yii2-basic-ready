@@ -2,103 +2,110 @@
 
 namespace app\models;
 
-class User extends \yii\base\BaseObject implements \yii\web\IdentityInterface
+use app\gofuroov\traits\TypesTrait;
+use Yii;
+use yii\behaviors\BlameableBehavior;
+use yii\behaviors\TimestampBehavior;
+use yii\web\IdentityInterface;
+
+/**
+ * This is the model class for table "user".
+ *
+ * @property int $id
+ * @property string|null $username
+ * @property string|null $email
+ * @property string|null $first_name
+ * @property string|null $last_name
+ * @property string $auth_key
+ * @property string $password_hash
+ * @property string|null $password_reset_token
+ * @property string|null $photo
+ * @property int $type
+ * @property int $status
+ * @property string|null $verification_token
+ * @property int $created_at
+ * @property int $updated_at
+ * @property-read null|string $authKey
+ * @property int|null $updated_by
+ */
+class User extends DefaultActiveRecord implements IdentityInterface
 {
-    public $id;
-    public $username;
-    public $password;
-    public $authKey;
-    public $accessToken;
+    use TypesTrait;
 
-    private static $users = [
-        '100' => [
-            'id' => '100',
-            'username' => 'admin',
-            'password' => 'admin',
-            'authKey' => 'test100key',
-            'accessToken' => '100-token',
-        ],
-        '101' => [
-            'id' => '101',
-            'username' => 'demo',
-            'password' => 'demo',
-            'authKey' => 'test101key',
-            'accessToken' => '101-token',
-        ],
-    ];
+    public const TYPE_ADMIN = 1;
+    public const TYPE_USER = 2;
 
+    public static function getTypeList(): array
+    {
+        return [
+            static::TYPE_ADMIN => 'Admin',
+            static::TYPE_USER => 'User'
+        ];
+    }
 
     /**
      * {@inheritdoc}
      */
+    public static function tableName()
+    {
+        return 'user';
+    }
+
+    public function behaviors(): array
+    {
+        return array_merge(parent::behaviors(), [
+            TimestampBehavior::class,
+            [
+                'class' => BlameableBehavior::class,
+                'createdByAttribute' => false
+            ]
+        ]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function rules()
+    {
+        return [
+            [['auth_key', 'password_hash', 'type', 'created_at', 'updated_at'], 'required'],
+            [['type', 'status', 'created_at', 'updated_at', 'updated_by'], 'integer'],
+            [['username', 'email', 'first_name', 'last_name', 'password_hash', 'password_reset_token', 'photo', 'verification_token'], 'string', 'max' => 255],
+            [['auth_key'], 'string', 'max' => 32],
+            [['username'], 'unique'],
+            [['email'], 'unique'],
+            [['password_reset_token'], 'unique'],
+        ];
+    }
+
     public static function findIdentity($id)
     {
-        return isset(self::$users[$id]) ? new static(self::$users[$id]) : null;
+        return self::findOne([
+            'id' => $id,
+            'status' => self::STATUS_ACTIVE
+        ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function findIdentityByAccessToken($token, $type = null)
     {
-        foreach (self::$users as $user) {
-            if ($user['accessToken'] === $token) {
-                return new static($user);
-            }
-        }
-
-        return null;
+        return self::findOne([
+            'auth_key' => $token,
+            'status' => self::STATUS_ACTIVE
+        ]);
     }
 
-    /**
-     * Finds user by username
-     *
-     * @param string $username
-     * @return static|null
-     */
-    public static function findByUsername($username)
-    {
-        foreach (self::$users as $user) {
-            if (strcasecmp($user['username'], $username) === 0) {
-                return new static($user);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getId()
     {
         return $this->id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getAuthKey()
+    public function getAuthKey(): ?string
     {
-        return $this->authKey;
+        return $this->auth_key;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function validateAuthKey($authKey)
+    public function validateAuthKey($authKey): bool
     {
-        return $this->authKey === $authKey;
-    }
-
-    /**
-     * Validates password
-     *
-     * @param string $password password to validate
-     * @return bool if password provided is valid for current user
-     */
-    public function validatePassword($password)
-    {
-        return $this->password === $password;
+        return $this->auth_key === $authKey;
     }
 }
