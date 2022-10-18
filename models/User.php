@@ -68,7 +68,7 @@ class User extends DefaultActiveRecord implements IdentityInterface
     public function rules()
     {
         return [
-            [['auth_key', 'password_hash', 'type', 'created_at', 'updated_at'], 'required'],
+            [['auth_key', 'password_hash', 'type'], 'required'],
             [['type', 'status', 'created_at', 'updated_at', 'updated_by'], 'integer'],
             [['username', 'email', 'first_name', 'last_name', 'password_hash', 'password_reset_token', 'photo', 'verification_token'], 'string', 'max' => 255],
             [['auth_key'], 'string', 'max' => 32],
@@ -107,5 +107,24 @@ class User extends DefaultActiveRecord implements IdentityInterface
     public function validateAuthKey($authKey): bool
     {
         return $this->auth_key === $authKey;
+    }
+
+    /**
+     * @param string $password
+     * @return void
+     * @throws \yii\base\Exception
+     */
+    public function setPassword(string $password): void
+    {
+        $this->password_hash = Yii::$app->security->generatePasswordHash($password);
+    }
+
+    /**
+     * @return void
+     * @throws \yii\base\Exception
+     */
+    public function generateAuthKey(): void
+    {
+        $this->auth_key = Yii::$app->security->generateRandomString();
     }
 }
