@@ -1,6 +1,11 @@
 <?php
+require __DIR__ . '/../vendor/autoload.php';
+
+// load ENV variables
+(Dotenv\Dotenv::createImmutable(dirname(__DIR__)))->safeLoad();
+
 // comment out the following two lines when deployed to production
-defined('YII_DEBUG') or define('YII_DEBUG', true);
+defined('YII_DEBUG') or define('YII_DEBUG', (bool)$_ENV['APP_DEBUG']);
 defined('YII_ENV') or define('YII_ENV', 'dev');
 
 require __DIR__ . '/../vendor/autoload.php';

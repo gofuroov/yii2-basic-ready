@@ -1,9 +1,12 @@
 <?php
 
-use app\modules\admin\AdminModule;
-use yii\log\FileTarget;
 use app\models\User;
+use app\modules\admin\AdminModule;
 use yii\caching\FileCache;
+use yii\log\FileTarget;
+use yii\web\JsonParser;
+use yii\web\JsonResponseFormatter;
+use yii\web\MultipartFormDataParser;
 
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
@@ -16,7 +19,7 @@ $config = [
     'bootstrap' => ['log'],
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
-        '@npm'   => '@vendor/npm-asset',
+        '@npm' => '@vendor/npm-asset',
     ],
     'modules' => [
         'admin' => [
@@ -25,8 +28,23 @@ $config = [
     ],
     'components' => [
         'request' => [
+            'baseUrl' => '',
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
-            'cookieValidationKey' => md5(getenv('APP_NAME').'@@'),
+            'cookieValidationKey' => md5(getenv('APP_NAME') . '@@'),
+            'parsers' => [
+                'application/json' => JsonParser::class,
+                'multipart/form-data' => MultipartFormDataParser::class
+            ],
+        ],
+        'response' => [
+            'formatters' => [
+                \yii\web\Response::FORMAT_JSON => [
+                    'class' => JsonResponseFormatter::class,
+                    'encodeOptions' => JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
+                ],
+            ],
+            'format' => yii\web\Response::FORMAT_JSON,
+            'charset' => 'UTF-8',
         ],
         'cache' => [
             'class' => FileCache::class,

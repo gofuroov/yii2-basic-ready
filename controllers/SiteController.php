@@ -11,101 +11,22 @@ use app\models\LoginForm;
 use yii\web\ErrorAction;
 use yii\captcha\CaptchaAction;
 
-class SiteController extends Controller
+class SiteController extends BaseController
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function behaviors()
+    public function behaviors(): array
     {
-        return [
-            'access' => [
-                'class' => AccessControl::class,
-                'only' => ['logout'],
-                'rules' => [
-                    [
-                        'actions' => ['logout'],
-                        'allow' => true,
-                        'roles' => ['@'],
-                    ],
-                ],
-            ],
-            'verbs' => [
-                'class' => VerbFilter::class,
-                'actions' => [
-                    'logout' => ['post'],
-                ],
-            ],
-        ];
+        $parent = parent::behaviors();
+        unset($parent['authenticator']);
+        return $parent;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function actions()
+    public function actionIndex():array
     {
-        return [
-            'error' => [
-                'class' => ErrorAction::class,
-            ],
-            'captcha' => [
-                'class' => CaptchaAction::class,
-                'fixedVerifyCode' => YII_ENV_TEST ? 'testme' : null,
-            ],
-        ];
-    }
-
-    /**
-     * Displays homepage.
-     *
-     * @return string
-     */
-    public function actionIndex()
-    {
-        return $this->render('index');
-    }
-
-    /**
-     * Login action.
-     *
-     * @return Response|string
-     */
-    public function actionLogin()
-    {
-        if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
-        }
-
-        $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
-        }
-
-        $model->password = '';
-        return $this->render('login', [
-            'model' => $model,
+        return $this->myResponse([
+            'author' => [
+                'name' => 'Olimjon Gofurov',
+                'telegram' => 't.me/gofuroov'
+            ]
         ]);
-    }
-
-    /**
-     * Logout action.
-     *
-     * @return Response
-     */
-    public function actionLogout()
-    {
-        Yii::$app->user->logout();
-
-        return $this->goHome();
-    }
-
-    /**
-     * Displays about page.
-     *
-     * @return string
-     */
-    public function actionAbout()
-    {
-        return $this->render('about');
     }
 }
